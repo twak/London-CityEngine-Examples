@@ -1,0 +1,395 @@
+/**
+ * File:    6365.cga
+ * Created: 23 Aug 2016 11:42:06 GMT
+ * Author:  twak
+ */
+
+version "2016.0"
+
+@Handle(shape=LotHandle, axis=y, occlusion=false)
+attr height = 14.974
+
+@Handle(shape=LotHandle, axis=x, occlusion=false)
+attr width = 11.125505
+
+@Handle(shape=Tower, axis=x, occlusion=false)
+
+attr towerWidth = 2.994168
+
+
+@Handle(shape=ArchDoor, axis=x, occlusion=false)
+attr groundArchDiam = 1.531235
+
+@Handle(shape=Ground^1, axis=y, occlusion=false)
+attr groundFloorHeight = 3.837827
+
+#@Handle(shape=LotHandle, axis=y-, occlusion=false)
+attr yOff = 0
+#@Handle(shape=LotHandle, axis=y, occlusion=false)
+attr yScale = 1.036689
+#@Handle(shape=LotHandle, axis=x-, occlusion=false)
+attr xOff = 0
+#@Handle(shape=LotHandle, axis=x, occlusion=false)
+attr xScale = 1.007408
+
+@Range("color", "project")
+@Handle(type=selector, shape=LotHandle)
+attr texType = "color"
+
+@startrule
+Lot --> 
+	s (width, scope.sy, scope.sz)
+	extrude (height)
+	setupProjection(0, scope.xy, 'xScale, 'yScale, '-xOff, '-yOff  ) 
+	LotHandle
+	
+X --> 
+	case (texType == "color"):
+		XX
+	case (texType == "project"):
+		color("#ffffff")
+		set(material.colormap, "images/IMG_6365_orig_cropped_by_ce.jpg")
+		projectUV(0)
+		XX
+	else:
+		XX
+
+LotHandle -->
+	comp(f) {
+		front : Facade |
+		all : X
+	}
+		
+Facade -->
+	split (x) {
+		towerWidth: Tower |
+		~1 : Facade(2) |
+		towerWidth : Tower
+	}
+	
+
+Tower -->
+	extrude ( 0.5 )
+	comp (f) {
+		top : Facade(1) |
+		left: set(trim.horizontal, true) set(trim.vertical, false) s(scope.sy, scope.sx, 0) r(0, 0, 90) t(0, -scope.sy, 0) Facade(0) |
+		right: set(trim.horizontal, true) set(trim.vertical, false) s(scope.sy, scope.sx, 0) r(0, 0, 270) t('-1, 0, 0) Facade(0)  |
+		#right: Facade(0) |
+		back : X |
+		all : NIL
+	}
+
+Blah --> extrude (12)
+	comp(f) {
+	side: Facade(0)
+	}
+
+const bigRailHeight = 0.3
+const midRailOffset = (width - towerWidth*2 - 1) * 0.5
+
+
+Facade (n) --> # horizontal splits and pediments
+	split(y) {
+		groundFloorHeight : Ground(n) |
+		bigRailHeight : s(scope.sx+5, '1, '1) t(-2.5,0,0) extrude(0.1) trim() Wall |
+		~3.0 : One(n) |
+		bigRailHeight : s(scope.sx+5, '1, '1) t(-2.5,0,0) extrude(0.1) trim() Wall |
+		midRailOffset : Three(n) |
+		1.4: s(scope.sx + 5,'1, 0.3) t(-2.5,0,0) i("/blah/assets/6365_top_ledge.obj") Wall |
+		2: Four(n)
+	}
+
+Four(n) -->
+	case (n> 0):
+		FourAll
+	else: Wall
+
+FourAll --> 
+	split(y) {
+		~1 : Wall |
+		1 : split(x)
+			{
+				{~0.7 : Wall |
+				1 : RoundWindow }* |
+				~0.7 : Wall
+			} |
+		~1 : Wall
+	}
+
+RoundWindow -->
+	Wall
+	extrude (0.3)
+	t(0,0,0) 
+	i("/blah/assets/6365_round_window.obj") 
+	Wall
+	
+
+One(n) -->
+	case (n ==1 ):
+		Tower1
+	case (n == 2 ):
+		Central1
+	else:
+		Wall
+
+Tower1 -->
+	split(x)
+	{
+		~1 : Pillar1Hack |
+		0.2 : Wall |
+		windowWidth : split(y) {
+			
+			~1: RectWindow |
+			1.35 : Wall
+		} |
+		0.2 : Wall |
+		~1 : Pillar1Hack
+	}
+
+Pillar1Hack -->
+	Wall
+	s('1, scope.sy + bigRailHeight + 	midRailOffset, '1 )
+	extrude (0.4)
+	Pillar
+	
+Pillar -->
+	PillarTop
+	i ("/blah/assets/6365_pillar.obj") Wall
+	
+PillarTop -->
+	s('1,'1, 0.3)
+	primitiveCube() Wall
+	t('-0.25,0,0)
+	s('1.5,'1.2, '1)
+	
+	split (x) {
+		0.3 :  primitiveCylinder() Wall |
+		~0.1 : NIL |
+		0.3 :  primitiveCylinder() Wall
+	}
+	
+Central1 --> 
+	split(y) 
+	{
+		~1 : split(x) 
+		{
+			centralMargin : Wall |
+			{~windowWidth : RectWindow |
+			~0.4 :  C1Pillar }* |
+			~windowWidth : RectWindow |  
+			centralMargin : Wall 
+		} |
+		0.7 : Wall 
+	}
+	
+C1Pillar --> 
+	Wall
+	extrude (0.3)
+	Pillar
+
+Three(n) -->
+	case (n ==1 ):
+		Tower3
+	case (n == 2 ):
+		CentralThree
+	else:
+		Wall
+
+const centralMargin = 0.4
+
+CentralThree -->
+	split(y) {
+		~1 : split(x){
+			centralMargin: Wall |
+			~1 : Central3Windows s('1,'1,0.6) t(0,0,-0.6) i ("/blah/assets/6365_partial_arch.obj") Wall | 
+			centralMargin: Wall 
+			} |
+		0.5 : Wall
+		}
+
+const archWindowSetback = 0.3
+const windowWidth = 1.2
+Central3Windows -->
+	t (0,0,-archWindowSetback)
+	split(x) {
+		{~windowWidth : RectWindow |
+		~0.4 : extrude (archWindowSetback-0.001) Wall }* |
+		~windowWidth : RectWindow  
+	}
+	
+Tower3 --> 	
+	split(x)
+	{
+		~1 : Wall |
+		windowWidth : split(y) {
+			~0.3 : Wall |
+			midRailOffset - 0.7 : RectWindow |
+			~1 : Wall
+		} |
+		~1 : Wall
+	}
+	
+	
+const rWFrameWidth = 0.03
+RectWindow -->
+	split(y) 
+		{ 
+			{rWFrameWidth: WWood |
+			~0.5 : 
+			split(x) {
+				{
+					rWFrameWidth: WWood |
+					~0.35 : GlassPane					
+				}* |
+				rWFrameWidth: WWood 
+			} } *  | 
+			
+			rWFrameWidth: WWood
+		}
+	
+GlassPane -->
+	extrude (-0.01)
+	comp(f)
+	{
+		top : NIL |
+		bottom: Glass |
+		all: WWood		
+	}
+	
+Glass --> color("#222222") X
+Wall --> color("#dddddd") X
+WWood --> color("#ffffff") X
+
+
+Ground(n) -->
+	case(n == 0):
+		GroundWall
+	case (n==1) :
+		TowerGround
+	else:
+		CentralGround
+
+CentralGround -->
+	split(x) {
+		~0.25 : GroundWall |
+		groundArchDiam : ArchDoor GroundArch |
+		~1 : GroundWall |
+		groundArchDiam : ArchDoor GroundArch |
+		~0.25 : GroundWall 
+	}
+
+ArchDoor -->
+	t (0, 0, -0.4)
+	split(y) {
+		~1 : Door |
+		groundRailDepth : GroundRail |
+		constAboveArches : Wall
+	}
+	
+Door -->
+	split(x)
+	{
+		0.3: Wall |
+		~1 : extrude(-0.2)
+			comp(f) {
+				top: color("#ff0000") X |
+				left: Wall |
+				back: Wall |
+				right: Wall
+			} |
+		0.3 : Wall
+	}
+
+TowerGround -->
+	set(trim.horizontal, false) set(trim.vertical, false) 
+	split(x) {
+		~1 : GroundWall |
+		groundArchDiam : SetbackWindow GroundArch |
+		~1 : GroundWall 
+	}
+	
+	
+const groundWindowOffset = 0.2
+SetbackWindow -->
+	t(0,0,-0.3)
+	split(x) {
+		groundWindowOffset : Wall |
+		~1 : split(y) {
+			0.8 : Wall |
+			~1 : ArchWindowInnerBottom	|
+				scope.sx / 2 : ArchWindowInnerTop
+			 |
+			constAboveArches - groundArchDiam/2 + groundWindowOffset : Wall
+		} |
+		groundWindowOffset : Wall
+	}
+
+const archWindowSetBack = 0.1
+ArchWindowInnerTop -->
+	s('1,'1, archWindowSetBack)
+	t(0,0,-archWindowSetBack)
+	i ( "/blah/assets/6365_full_arch_back.obj" ) Wall
+	s('1,'1,0.001)
+	i ("builtin:cube")
+	Glass
+
+ArchWindowInnerBottom -->
+	extrude ( -archWindowSetBack )
+	
+	comp (f) {
+		left : Wall |
+		right : Wall |
+		top : Glass
+	}
+	
+const constAboveArches = 1.2
+
+GroundWall --> 
+	split(y) {
+		~1 : Wall |
+		groundRailDepth : GroundRail |
+		constAboveArches : Wall
+	}
+	
+GroundArch --> 
+	split(y) {
+		~1 : ArchWindowBottomOuter |
+		groundRailDepth : ArchWindowBottomMiddle |
+		groundArchDiam/2 : ArchWindowTopOuter |
+		constAboveArches - groundArchDiam/2 : Wall
+	}
+		
+	
+const groundRailDepth = 0.05
+GroundRail -->
+	s (scope.sx + groundRailDepth * 2, '1, '1 )
+	t (-groundRailDepth - 0.001, 0, 0)
+	extrude (groundRailDepth)
+	Wall	
+	
+const archWindowOuterDepth = 0.4	
+ArchWindowTopOuter -->
+	s('1,'1,archWindowOuterDepth)
+	t(0,0,'-1)
+	i ( "/blah/assets/6365_full_arch.obj" )
+	Wall
+
+ArchWindowBottomMiddle -->
+	extrude (-archWindowOuterDepth)
+	comp (f) {
+		back : NIL |
+		bottom : NIL |
+		front: NIL | 
+		left: r( 180, 0, 90)  s(scope.sy, scope.sx, '1)    GroundRail |
+		right: r(180, 0, 90)  s(scope.sy, scope.sx, '1) GroundRail |
+		all : NIL
+	}	
+		
+ArchWindowBottomOuter -->
+	extrude (-archWindowOuterDepth)
+	comp (f) {
+		back : NIL |
+		bottom : NIL |
+		top: NIL |
+		all : Wall
+	}	

@@ -1,0 +1,351 @@
+/**
+ * File:    5643.cga
+ * Created: 22 Aug 2016 16:46:05 GMT
+ * Author:  twak
+ */
+ 
+
+version "2016.0"
+
+import EsriPlant: "/ESRI.lib/rules/Plants/Plant_Loader.cga"
+
+
+
+@Range("color", "project")
+@Handle(type=selector, shape=LotHandle)
+attr texType = "color"
+
+@Handle(shape=LotHandle, axis=y, occlusion=false)
+attr height = 9.37
+
+@Handle(shape=LotHandle, axis=x, occlusion=false)
+attr width = 5.39
+#@Handle(shape=LotHandle, axis=y-)
+attr yOff = 0.134321
+#@Handle(shape=LotHandle, axis=y)
+attr yScale = 1.196459
+#@Handle(shape=LotHandle, axis=x-)
+attr xOff = 0.290399
+#@Handle(shape=LotHandle, axis=x)
+attr xScale = 1.59049
+
+
+Lot --> 
+	s(width, scope.sy, scope.sz)
+	extrude (height)
+	setupProjection(0, scope.xy, 'xScale, 'yScale, '-xOff, '-yOff  ) 
+	LotHandle
+	
+X --> 
+	case (texType == "color"):
+		XX
+	case (texType == "project"):
+		color("#ffffff")
+		set(material.colormap, "images/IMG_5643.jpg")
+		projectUV(0)
+		XX
+	else:
+		XX
+	
+LotHandle --> 
+	comp(f) {
+		top: Roof |
+		front: Front |
+		all : X
+	}
+
+/////////////////////////////
+
+Front --> 
+	split (y) {
+		2.95   : Ground |
+		2.55   : WallFac(1)  |
+		{~2 : WallFac(0) }*
+	}
+
+const wallFXPadL = 0.65
+const wallFXPadR = 0.6
+const wallFWindowWidth = 0.8
+
+WallFac(H) --> 
+	split(x) {
+		wallFXPadL: Wall |
+		~1 : split(x) {
+			wallFWindowWidth : WallWindow(H*1) |
+			{	
+				~1 : Wall  |
+				wallFWindowWidth : WallWindow(H*2 ) | 
+				~1 : Wall  
+			}* |
+			wallFWindowWidth : WallWindow(H*1)	} |
+		wallFXPadR: Wall
+	}
+	
+const openingWindowHeight = 1.1
+const fixedWindowHeight = 0.43
+const keyStoneHeight = 0.3
+	
+WallWindow(N) --> split (y) {
+	0.2 : Wall |
+	openingWindowHeight + N * fixedWindowHeight : WallWindow |
+	keyStoneHeight : Wall   KS |
+	~1 : Wall
+}
+
+const outerWindowFrame = 0.03
+
+WallWindow --> 
+	extrude(-0.15)
+	
+	comp(f) {
+		object.bottom: 
+			WindowCill WindowRail
+			 |
+		top : split(x) {
+			outerWindowFrame : WWood |
+			~1:split(y) {
+				outerWindowFrame : WWood |
+				~1 : WallWindow2 |
+				outerWindowFrame : WWood 
+				} |
+			outerWindowFrame : WWood 
+		} |
+		side: Wall
+	}
+
+const railHeight = 0.35
+
+WindowRail -->
+			t(-scope.sx * 0.05,-0.02, -railHeight) 
+			s(scope.sx * 1.1, scope.sy * 1.1, 0)
+			extrude (railHeight)
+			comp (f) {
+				object.top : NIL |
+				object.back : NIL |
+				object.bottom : NIL |
+				all:
+				set(material.color.a, 0.3)
+				color(0,0,0)
+				XX
+			}
+
+WindowCill -->
+			t(-scope.sx * 0.05,-0.02,0) 
+			s(scope.sx * 1.1, scope.sy * 1.1, 0)
+			extrude (0.07)
+			WWood
+		
+WallWindow2 -->
+	split(y) {
+		openingWindowHeight : OpeningTopWindow |
+		~1 : FixedTopWindow 
+	}
+	
+OpeningTopWindow --> 
+	split(x) {
+		outerWindowFrame : WWood |
+		~0.3 : split(y){
+			outerWindowFrame : WWood |
+			~0.6 : RecessedGlass |
+			outerWindowFrame : WWood |
+			outerWindowFrame : WWood |
+			~0.6 : RecessedGlass |
+			outerWindowFrame : WWood 
+		} |
+		outerWindowFrame : WWood 
+	}*
+	
+	
+FixedTopWindow --> 
+	split(y) {
+		outerWindowFrame : WWood |
+		~0.3 : split(x){
+			outerWindowFrame : WWood |
+			~0.3 : RecessedGlass |
+			outerWindowFrame : WWood |
+			outerWindowFrame : WWood |
+			~0.3 : RecessedGlass |
+			outerWindowFrame : WWood 
+		} |
+		outerWindowFrame : WWood 
+	}*
+	
+RecessedGlass -->
+	extrude (0.02)
+	comp (f) {
+		top : Glass |
+		side: WWood
+	}	
+	
+KS --> extrude (0.1)
+	t(scope.sx* -0.1, -0.07, 0.01)
+	s(scope.sx * 1.2, scope.sy, scope.sz )
+	i("/blah/assets/5643_keystone.obj")
+	X
+
+WWood --> color("#ffffff") X //white window wood
+
+#color("#12ff87") X
+
+Wall --> color("#595045") X
+
+/////////////////////////////
+
+Ground -->
+	split(y) {
+		0.2 : extrude (1) Step |
+		~1 : split (x) {
+			0.6 : X |
+			~1 : GroundFloorWindows |
+			0.35 : X
+		} |
+		0.06 :  WWood |
+		0.4 : extrude (0.1) Sign |
+		0.3 : extrude (0.5) Sign 
+	}
+	
+Sign --> color("#444750") X
+
+Step -->
+	comp(f) {
+		object.top : Decking t (0, scope.sy -pH, 0) Plant t(scope.sx -pH,0,0 ) Plant  |
+		all : Decking
+	}
+	
+Decking --> color("#804000") X
+	
+const pH = 0.55
+
+Plant -->
+	s (pH, pH, 0)
+	extrude (pH) 
+	comp(f) {
+		top: offset(-0.1) comp (f) {
+			inside : extrude(-pH / 2) comp(f) {
+				side: X |
+				top: EsriPlant.Generate
+			} |
+			border : X
+		} |
+		all : X
+	}
+
+
+GroundFloorWindows --> 
+	split(x) {
+		~0.9 : GroundFloorDoorOrWindow
+	}*
+
+GroundFloorDoorOrWindow -->
+	case (split.index == split.total-1) : color("#804000") DoorPanel
+	else: GroundFloorWindow
+
+const GroundFloorDWTopPanel = 0.30
+
+GroundFloorWindow --> split(y) {
+	0.6 : GroundWood |
+	~1 : GroundWindowPanel |
+	GroundFloorDWTopPanel : GroundWindowPanel 
+}
+
+DoorPanel --> split(y) {
+	~1 : Door |
+	GroundFloorDWTopPanel : GroundWindowPanel 
+}
+
+const doorW = 0.15
+
+Door --> 
+	DoorHandle
+	split(y) {
+		doorW : GroundWood |
+		~0.5 : DoorPane |
+		doorW : GroundWood |
+		~1 : DoorPane |
+		doorW: GroundWood
+	}
+	
+DoorHandle -->
+	t (doorW/4, scope.sy * 0.5, 0)
+	s (doorW/2, scope.sy * 0.2, 0 )
+	extrude (0.1)
+	color("#000000")
+	X
+	
+DoorPane -->
+	split(x) {
+		doorW : GroundWood |
+		~1 : DoorPaneS |
+		doorW: GroundWood |
+		~1 : DoorPaneS |
+		doorW: GroundWood 
+	}
+DoorPaneS --> extrude (-0.03) 
+	comp (f) {
+		top : GroundWood |
+		side : GroundWood
+	}
+
+const gPW = 0.1
+
+GroundWindowPanel -->
+	split(x) {
+		gPW : GroundWood |
+		~1 : GroundWindowPanel2 |
+		gPW : GroundWood |
+		~1 : GroundWindowPanel2 |
+		gPW : GroundWood
+	}
+	
+GroundWindowPanel2 -->
+	split(y) {
+	gPW : GroundWood |
+	~1 : extrude(-0.03) comp(f) { side: GroundWood | top: Glass } |
+	gPW : GroundWood
+	}
+	
+GroundWood --> color("#cccccc") X
+Glass -->
+	 color("#6666ff")	
+	 X
+
+
+const topLip = 0.2
+
+Roof -->
+	s (scope.sx, scope.sy + topLip, scope.sz)
+	t (0, -topLip, 0)
+	
+	extrude (0.05)
+	comp (f) {
+		top : split (y) { bH : B |
+			~1 : X } |
+		all : X
+	}
+	
+	
+/////////////////////////////
+
+const bH = 0.05
+const bV = 0.7
+
+B --> 
+	split (x) {
+		{
+			bH : VBar |
+			~1. : HBar 
+		} * |
+			bH : VBar 
+	}
+
+VBar -->
+	extrude (bV)
+	X
+	
+HBar -->
+	extrude ( bV)
+	split(y) 
+		{ 
+		~0.3 : NIL |
+		bH : X 
+	}*

@@ -1,0 +1,16 @@
+/**
+ * File:    texture.cga
+ * Created: 23 Aug 2016 09:40:42 GMT
+ * Author:  twak
+ */
+
+version "2016.0"
+
+attr tex = "images/IMG_5643.jpg"
+attr alpha = 0.4
+
+Lot --> 	
+		set ( material.color.a, alpha)
+		setupProjection(0, scope.xz, '1, '1 ) 
+		set(material.colormap, tex)
+		projectUV(0)
