@@ -1,6 +1,6 @@
 # London-CityEngine-Examples
 
-CGA code for 2 buildings from London. [Video] (https://youtu.be/ViEGCgmXIvw).
+CGA code for 2 London buildings. [Video] (https://youtu.be/ViEGCgmXIvw).
 
 <img src="https://github.com/twak/London-CityEngine-Examples/blob/master/images/models.png">
 
