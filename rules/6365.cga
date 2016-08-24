@@ -95,7 +95,7 @@ Facade (n) --> # horizontal splits and pediments
 		~3.0 : One(n) |
 		bigRailHeight : s(scope.sx+5, '1, '1) t(-2.5,0,0) extrude(0.1) trim() Wall |
 		midRailOffset : Three(n) |
-		1.4: s(scope.sx + 5,'1, 0.3) t(-2.5,0,0) i("/blah/assets/6365_top_ledge.obj") Wall |
+		1.4: s(scope.sx + 5,'1, 0.3) t(-2.5,0,0) i("assets/6365_top_ledge.obj") Wall |
 		2: Four(n)
 	}
 
@@ -120,7 +120,7 @@ RoundWindow -->
 	Wall
 	extrude (0.3)
 	t(0,0,0) 
-	i("/blah/assets/6365_round_window.obj") 
+	i("assets/6365_round_window.obj") 
 	Wall
 	
 
@@ -154,7 +154,7 @@ Pillar1Hack -->
 	
 Pillar -->
 	PillarTop
-	i ("/blah/assets/6365_pillar.obj") Wall
+	i ("assets/6365_pillar.obj") Wall
 	
 PillarTop -->
 	s('1,'1, 0.3)
@@ -201,7 +201,7 @@ CentralThree -->
 	split(y) {
 		~1 : split(x){
 			centralMargin: Wall |
-			~1 : Central3Windows s('1,'1,0.6) t(0,0,-0.6) i ("/blah/assets/6365_partial_arch.obj") Wall | 
+			~1 : Central3Windows s('1,'1,0.6) t(0,0,-0.6) i ("assets/6365_partial_arch.obj") Wall | 
 			centralMargin: Wall 
 			} |
 		0.5 : Wall
@@ -328,7 +328,7 @@ const archWindowSetBack = 0.1
 ArchWindowInnerTop -->
 	s('1,'1, archWindowSetBack)
 	t(0,0,-archWindowSetBack)
-	i ( "/blah/assets/6365_full_arch_back.obj" ) Wall
+	i ( "assets/6365_full_arch_back.obj" ) Wall
 	s('1,'1,0.001)
 	i ("builtin:cube")
 	Glass
@@ -371,7 +371,7 @@ const archWindowOuterDepth = 0.4
 ArchWindowTopOuter -->
 	s('1,'1,archWindowOuterDepth)
 	t(0,0,'-1)
-	i ( "/blah/assets/6365_full_arch.obj" )
+	i ( "assets/6365_full_arch.obj" )
 	Wall
 
 ArchWindowBottomMiddle -->

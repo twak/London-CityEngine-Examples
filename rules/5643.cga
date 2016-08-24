@@ -180,7 +180,7 @@ RecessedGlass -->
 KS --> extrude (0.1)
 	t(scope.sx* -0.1, -0.07, 0.01)
 	s(scope.sx * 1.2, scope.sy, scope.sz )
-	i("/blah/assets/5643_keystone.obj")
+	i("assets/5643_keystone.obj")
 	X
 
 WWood --> color("#ffffff") X //white window wood
